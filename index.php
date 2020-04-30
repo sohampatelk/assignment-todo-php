@@ -7,6 +7,7 @@ session_start();
 if (isset($_POST['reset'])) {
     session_unset();
     session_destroy();
+    session_start();
 }
 
 if (!isset($_SESSION['tasks'])) { // If it DOESN'T exist, let's make a default value (this way we can array_push to it later!)
@@ -15,14 +16,25 @@ if (!isset($_SESSION['tasks'])) { // If it DOESN'T exist, let's make a default v
 }
 $_SESSION['tasks'] = array_values($_SESSION['tasks']);
 $_SESSION['completed'] = array_values($_SESSION['completed']);
+$clicked='initial value';
 
 //logic behind submit task in form
-if (isset($_POST) && !empty($_POST)) //making sure something is submitted
+if (isset($_POST['add']) && !empty($_POST['task'])) //making sure something is submitted
 {
     array_push($_SESSION['tasks'], $_POST['task']);
     //before any output, you must declare if you would like to use session.
     //lets check our session entry exists
 }
+
+
+//If checkbox clicked, removed item from tasks, adds it to completed.
+foreach ( $_SESSION['tasks'] as $completingTask ) {
+    if ( isset( $_POST[$completingTask] ) ) {
+      array_push($_SESSION['completed'], $completingTask);
+      $index=array_search($completingTask, $_SESSION['tasks'] );
+      array_splice($_SESSION['tasks'],$index,1);
+    }
+  }
 
 ?>
 <!DOCTYPE html>
@@ -43,8 +55,8 @@ if (isset($_POST) && !empty($_POST)) //making sure something is submitted
             <input type="text" name="task" id="task">
         </label>
 
-        <input type="submit" value="Add to List">
-        <input type="submit" value="Reset">
+        <input type="submit" name="add" value="Add to List">
+        <input type="submit" name="reset" value="Reset">
     </form>
 
 
@@ -56,7 +68,7 @@ if (isset($_POST) && !empty($_POST)) //making sure something is submitted
             <?php foreach ($_SESSION['tasks'] as $task) { 
             ?>
                 <li>
-                    <input type="checkbox" onChange="submit();" name="<?php echo $task; ?>" id="<?php echo $task; ?>" value="checked" >
+                    <input type="checkbox" onChange="submit();" name="<?php echo $task; ?>" id="<?php echo $task; ?>">
                     <?php echo $task; ?>
                 </li>
             <?php } ?>
